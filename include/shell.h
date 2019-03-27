@@ -6,11 +6,19 @@
 #ifndef INC_1901_OPERATINGSYSTEMS_ELE3021_SHELL_H
 #define INC_1901_OPERATINGSYSTEMS_ELE3021_SHELL_H
 
-typedef struct {
+// Struct representing a single command.
+// Commands contained in a same line are linked.
+struct CommandNode {
+    char * cmd;
+    char ** argv;
+    struct CommandNode * p_nxt;
+};
 
-} Command;
+typedef struct CommandNode  CommandNode;
+typedef CommandNode *       CommandList;
 
 char * read_line(FILE * infile);
-char ** parse_line(char *);
+CommandList parse_line(char * line);
+int exec_command(const CommandNode * command);
 
 #endif //INC_1901_OPERATINGSYSTEMS_ELE3021_SHELL_H
