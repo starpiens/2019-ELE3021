@@ -1,3 +1,9 @@
 ls
 /bin/ls -al
 ls ; pwd ; cat file
+
+;
+    ;  ; cat
+  ls
+     ls ; pwd
+     ls;;;;;;cat

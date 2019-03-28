@@ -53,6 +53,8 @@ Command * parse_command(const char * command_string) {
         tok_start++;
     }
     if (*tok_start == '\0') {	// command_string is a whitespace string or empty string.
+        free(command_struct->argv);
+        free(command_struct);
         return NULL;
     }
     tok_end = tok_start;
@@ -90,6 +92,7 @@ CommandVec parse_line(char * line) {
     CommandVec command_vec;
     size_t command_vec_size;
     size_t command_vec_cap;
+    Command * command;
     char * p;
 
     command_vec_size = 0;
@@ -98,7 +101,12 @@ CommandVec parse_line(char * line) {
     p = strtok(line, ";");
 
     while (p != NULL) {
-        command_vec[command_vec_size++] = parse_command(p);
+        command = parse_command(p);
+        if (command == NULL) {
+            p = strtok(NULL, ";");
+            continue;
+        }
+        command_vec[command_vec_size++] = command;
         command_vec[command_vec_size] = NULL;
         if (command_vec_size == command_vec_cap) {      // Expand command_vec
             command_vec_cap *= 2;
@@ -122,8 +130,23 @@ int exec_commands(const CommandVec command_vec) {
         }
         printf("\n");
     }
-    printf("Done.\n");
+    printf("\n");
     return 0;
+}
+
+void free_command_vec(CommandVec command_vec) {
+    int i;
+    for (i = 0; command_vec[i] != NULL; i++) {
+        Command * command = command_vec[i];
+        int j;
+        for (j = 0; j < command->argc; j++) {
+            free(command->argv[j]);
+        }
+        free(command->argv);
+        free(command->cmd);
+        free(command);
+    }
+    free(command_vec);
 }
 
 int main(int argc, char * argv[]) {
@@ -140,6 +163,7 @@ int main(int argc, char * argv[]) {
         cmd_vec = parse_line(line);
         exec_commands(cmd_vec);
         free(line);
+        free_command_vec(cmd_vec);
     }
 
     printf("quit\n");
