@@ -120,8 +120,11 @@ int exec_commands(const CommandVec command_vec) {
 
         command = command_vec[i];
         pid = fork();
-        if (pid == 0) {
-            execvp(command->cmd, command->argv);
+        if (pid == -1) {
+            fprintf(stderr, "Failed to fork\n");
+            return -1;
+        } else if (pid == 0) {
+            exit(execvp(command->cmd, command->argv));
         } else {
             command->pid = pid;
         }

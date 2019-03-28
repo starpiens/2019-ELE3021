@@ -8,3 +8,4 @@ ls ; pwd ; cat file
      ls ; pwd
      ls;;;;;;ls
 ls -l /;
+asdf;ls
