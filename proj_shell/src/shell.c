@@ -32,7 +32,7 @@ char * read_line(FILE * infile) {
 
     while (true) {
         fgets(line + last, sizeof(*line) * (size - last), infile);
-        last = strlen(line);
+        last += strlen(line + last);
         if (feof(infile) || line[last - 1] == '\n') {
             return line;
         }
