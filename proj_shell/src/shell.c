@@ -22,10 +22,24 @@ typedef Command **      CommandVec;
 
 char * read_line(FILE * infile) {
     char * line;
-    if ( (line = calloc(4096, sizeof(char))) == NULL ) {	// TODO: variable length
-        return NULL;
+    size_t size;
+    size_t last;
+
+    last = 0;
+    size = 1;
+    line = calloc(size, sizeof(*line));
+    if (line == NULL) return NULL;
+
+    while (true) {
+        fgets(line + last, sizeof(*line) * (size - last), infile);
+        last = strlen(line);
+        if (feof(infile) || line[last - 1] == '\n') {
+            return line;
+        }
+        size *= 2;
+        line = realloc(line, sizeof(*line) * size);
+        if (line == NULL) return NULL;
     }
-    return fgets(line, sizeof(*line) * 4096, infile);
 }
 
 Command * parse_command(const char * command_string) {
@@ -196,4 +210,3 @@ int main(int argc, char * argv[]) {
 
     return 0;
 }
-
