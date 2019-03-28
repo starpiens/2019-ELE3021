@@ -181,7 +181,7 @@ int main(int argc, char * argv[]) {
             fflush(stdout);
         }
         line = read_line(p_infile);
-        if (line == NULL || strcmp(line, "quit") == 0) {
+        if (line == NULL || strcmp(line, "quit\n") == 0) {
             break;
         }
 
