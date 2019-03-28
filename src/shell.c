@@ -14,20 +14,11 @@ struct Command {
     char ** argv;
     size_t argc;
     size_t argv_size;
+    pid_t pid;
 };
 
 typedef struct Command  Command;
 typedef Command **      CommandVec;
-
-FILE * get_input_stream(char * argv[]) {
-    if (argv[1] == NULL) {
-        // Interactive mode. Read command from stdin.
-        return stdin;
-    } else {
-        // Batch mode. Read command from batch file.
-        return fopen(argv[1], "r");
-    }
-}
 
 char * read_line(FILE * infile) {
     char * line;
@@ -65,6 +56,7 @@ Command * parse_command(const char * command_string) {
     strncpy(command_struct->cmd, tok_start, tok_end - tok_start);
 
     // Copy args.
+    tok_end = command_string;
     while (1) {
         tok_start = tok_end;
         while (isspace(*tok_start) && *tok_start != '\0') {
@@ -98,12 +90,12 @@ CommandVec parse_line(char * line) {
     command_vec_size = 0;
     command_vec_cap = 1;
     command_vec = calloc(command_vec_cap + 1, sizeof(*command_vec));
-    p = strtok(line, ";");
+    p = strtok(line, ";\n");
 
     while (p != NULL) {
         command = parse_command(p);
         if (command == NULL) {
-            p = strtok(NULL, ";");
+            p = strtok(NULL, ";\n");
             continue;
         }
         command_vec[command_vec_size++] = command;
@@ -112,7 +104,7 @@ CommandVec parse_line(char * line) {
             command_vec_cap *= 2;
             command_vec = realloc(command_vec, sizeof(*command_vec) * (command_vec_cap + 1));
         }
-        p = strtok(NULL, ";");
+        p = strtok(NULL, ";\n");
     }
 
     return command_vec;
@@ -120,18 +112,31 @@ CommandVec parse_line(char * line) {
 
 // TODO:
 int exec_commands(const CommandVec command_vec) {
+    int ret;
     int i;
+
     for (i = 0; command_vec[i] != NULL; i++) {
-        int j;
-        printf("cmd: %s\n", command_vec[i]->cmd);
-        printf("args: ");
-        for (j = 0; j < command_vec[i]->argc; j++) {
-            printf("%s ", command_vec[i]->argv[j]);
+        Command * command;
+        pid_t pid;
+
+        command = command_vec[i];
+        pid = fork();
+        if (pid == 0) {
+            execvp(command->cmd, command->argv);
+        } else {
+            command->pid = pid;
         }
-        printf("\n");
     }
-    printf("\n");
-    return 0;
+
+    ret = 0;
+    while (i-- > 0) {
+        int pid;
+        int status;
+        pid = wait(&status);
+        ret |= status;
+    }
+
+    return ret;
 }
 
 void free_command_vec(CommandVec command_vec) {
@@ -152,21 +157,41 @@ void free_command_vec(CommandVec command_vec) {
 int main(int argc, char * argv[]) {
     FILE * p_infile;
     char * line;
+    enum MODE { BATCH, INTERACTIVE } mode;
 
-    if ((p_infile = get_input_stream(argv)) == NULL) {
+    mode = (argc == 1) ? INTERACTIVE : BATCH;
+
+    p_infile = NULL;
+    if (mode == INTERACTIVE) {
+        p_infile = stdin;
+    } else if (mode == BATCH) {
+        p_infile = fopen(argv[1], "r");
+    }
+
+    if (p_infile == NULL) {
         fprintf(stderr, "Failed to open input stream.\n");
         exit(1);
     }
 
-    while ((line = read_line(p_infile)) != NULL && strcmp(line, "quit") != 0) {
+    while (true) {
         CommandVec cmd_vec;
+
+        if (mode == INTERACTIVE) {
+            printf("prompt> ");
+            fflush(stdout);
+        }
+        line = read_line(p_infile);
+        if (line == NULL || strcmp(line, "quit") == 0) {
+            break;
+        }
+
         cmd_vec = parse_line(line);
         exec_commands(cmd_vec);
+
         free(line);
         free_command_vec(cmd_vec);
     }
 
-    printf("quit\n");
     return 0;
 }
 

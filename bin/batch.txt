@@ -3,7 +3,8 @@ ls
 ls ; pwd ; cat file
 
 ;
-    ;  ; cat
+    ;  ; ls
   ls
      ls ; pwd
-     ls;;;;;;cat
+     ls;;;;;;ls
+ls -l /;
