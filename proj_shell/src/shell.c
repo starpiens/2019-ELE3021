@@ -110,7 +110,6 @@ CommandVec parse_line(char * line) {
     return command_vec;
 }
 
-// TODO:
 int exec_commands(const CommandVec command_vec) {
     int ret;
     int i;
