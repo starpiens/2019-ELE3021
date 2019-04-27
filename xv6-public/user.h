@@ -24,6 +24,7 @@ char* sbrk(int);
 int sleep(int);
 int uptime(void);
 int yield(void);
+int cpu_share(int);
 
 // ulib.c
 int stat(const char*, struct stat*);

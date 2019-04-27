@@ -255,6 +255,10 @@ exit(void)
 
   acquire(&ptable.lock);
 
+  totshare -= curproc->share;
+  if (curproc->share == 0)
+    numdshare--;
+
   // Parent might be sleeping in wait().
   wakeup1(curproc->parent);
 
@@ -266,10 +270,6 @@ exit(void)
         wakeup1(initproc);
     }
   }
-
-  totshare -= curproc->share;
-  if (curproc->share == 0)
-    numdshare--;
 
   // Jump into the scheduler, never to return.
   curproc->state = ZOMBIE;
@@ -343,6 +343,7 @@ scheduler(void)
     // Loop over process table looking for process to run.
     acquire(&ptable.lock);
     struct proc *m = 0;
+    // TODO: Improve performance using min-heap.
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
       if (p->state == RUNNABLE) {
         if (m == 0 || m->nstep > p->nstep) {
@@ -557,4 +558,9 @@ procdump(void)
     }
     cprintf("\n");
   }
+}
+
+int cpu_share(int share) {
+  cprintf("cpu_share\n");
+  return 0;
 }
