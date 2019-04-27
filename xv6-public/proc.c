@@ -561,6 +561,19 @@ procdump(void)
 }
 
 int cpu_share(int share) {
-  cprintf("cpu_share\n");
+  if (share > 20 || totshare + share >= 100) {
+    return -1;
+  }
+
+  struct proc *p = myproc();
+
+  acquire(&ptable.lock);
+
+  p->share = share;
+  totshare += share;
+  numdshare++;
+
+  release(&ptable.lock);
+
   return 0;
 }

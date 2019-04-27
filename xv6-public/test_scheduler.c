@@ -8,10 +8,9 @@
 #include "user.h"
 
 int main(int argc, char *argv[]) {
-  for (int i = 0; i < 10; i++)
-  printf(1, "asdf\n");
+  int i;
+  for (i = 15; i < 25; i++)
+    printf(1, "%d ", cpu_share(i));
 
-  return 0;
+  exit();
 }
-
-
