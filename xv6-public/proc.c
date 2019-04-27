@@ -17,6 +17,7 @@ static struct proc *initproc;
 int nextpid = 1;
 int totshare = 0;
 int numdshare = 0;
+int minstep = 0;
 extern void forkret(void);
 extern void trapret(void);
 
@@ -90,6 +91,9 @@ allocproc(void)
 found:
   p->state = EMBRYO;
   p->pid = nextpid++;
+  p->share = 0;
+  p->nstep = minstep;
+  numdshare++;
 
   release(&ptable.lock);
 
@@ -263,6 +267,10 @@ exit(void)
     }
   }
 
+  totshare -= curproc->share;
+  if (curproc->share == 0)
+    numdshare--;
+
   // Jump into the scheduler, never to return.
   curproc->state = ZOMBIE;
   sched();
@@ -337,8 +345,10 @@ scheduler(void)
     struct proc *m = 0;
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
       if (p->state == RUNNABLE) {
-        if (m == 0 || m->nstep > p->nstep)
+        if (m == 0 || m->nstep > p->nstep) {
           m = p;
+          minstep = m->nstep;
+        }
       }
     }
     if (m == 0) {
@@ -346,7 +356,12 @@ scheduler(void)
       continue;
     }
 
-    m->nstep += m->stride;
+    double stride;
+    if (m->share)
+      stride = (double)100 / m->share;
+    else
+      stride = (double)(100 - totshare) / numdshare;
+    m->nstep += stride;
 
     // Switch to chosen process.  It is the process's job
     // to release ptable.lock and then reacquire it
@@ -355,7 +370,7 @@ scheduler(void)
     switchuvm(m);
     m->state = RUNNING;
 
-    swtch(&(c->scheduler), p->context);
+    swtch(&(c->scheduler), m->context);
     switchkvm();
 
     // Process is done running for now.
