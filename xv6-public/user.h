@@ -25,6 +25,7 @@ int sleep(int);
 int uptime(void);
 int yield(void);
 int cpu_share(int);
+void run_MLFQ(void);
 
 // ulib.c
 int stat(const char*, struct stat*);

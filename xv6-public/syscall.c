@@ -105,6 +105,7 @@ extern int sys_write(void);
 extern int sys_uptime(void);
 extern int sys_yield(void);
 extern int sys_cpu_share(void);
+extern int sys_run_MLFQ(void);
 
 static int (*syscalls[])(void) = {
 [SYS_fork]    sys_fork,
@@ -130,6 +131,7 @@ static int (*syscalls[])(void) = {
 [SYS_close]   sys_close,
 [SYS_yield]   sys_yield,
 [SYS_cpu_share]   sys_cpu_share,
+[SYS_run_MLFQ]    sys_run_MLFQ,
 };
 
 void

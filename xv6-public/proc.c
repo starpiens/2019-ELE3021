@@ -560,7 +560,9 @@ procdump(void)
   }
 }
 
-int cpu_share(int share) {
+int
+cpu_share(int share)
+{
   if (share > 20 || totshare + share >= 100) {
     return -1;
   }
@@ -576,4 +578,10 @@ int cpu_share(int share) {
   release(&ptable.lock);
 
   return 0;
+}
+
+void
+run_MLFQ(void)
+{
+  ;
 }

@@ -105,3 +105,10 @@ sys_cpu_share(void)
     return -1;
   return cpu_share(share);
 }
+
+int
+sys_run_MLFQ(void)
+{
+  run_MLFQ();
+  return 0;
+}

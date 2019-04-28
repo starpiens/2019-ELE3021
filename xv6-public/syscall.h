@@ -22,3 +22,4 @@
 #define SYS_close  21
 #define SYS_yield  22
 #define SYS_cpu_share  23
+#define SYS_run_MLFQ   24
