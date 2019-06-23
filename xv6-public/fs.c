@@ -408,7 +408,7 @@ bmap(struct inode *ip, uint bn)
     a = (uint*)bp->data;
     // Load single indirect block, allocating if necessary.
     if((addr = a[bn/NINDIRECT]) == 0){
-      a[bn/NDIRECT] = addr = balloc(ip->dev);
+      a[bn/NINDIRECT] = addr = balloc(ip->dev);
       log_write(bp);
     }
     brelse(bp);
