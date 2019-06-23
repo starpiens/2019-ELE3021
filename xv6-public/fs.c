@@ -513,18 +513,18 @@ itrunc(struct inode *ip)
       if(a[i]){
         bpp = bread(ip->dev, a[i]);
         aa = (uint*)bpp->data;
-        for(j = 0; j < NINDIRECT; i++)
+        for(j = 0; j < NINDIRECT; j++)
           if(aa[j]){
             bppp = bread(ip->dev, aa[j]);
             aaa = (uint*)bppp->data;
-            for(k = 0; k < NINDIRECT; i++)
+            for(k = 0; k < NINDIRECT; k++)
               if(aaa[k])
                 bfree(ip->dev, aaa[k]);
             brelse(bppp);
             bfree(ip->dev, aa[j]);
           }
         brelse(bpp);
-        bfree(ip->dev, a[j]);
+        bfree(ip->dev, a[i]);
       }
     brelse(bp);
     bfree(ip->dev, ip->addrs[NDIRECT+2]);
