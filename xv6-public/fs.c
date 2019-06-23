@@ -465,9 +465,9 @@ bmap(struct inode *ip, uint bn)
 static void
 itrunc(struct inode *ip)
 {
-  int i, j;
-  struct buf *bp;
-  uint *a;
+  int i, j, k;
+  struct buf *bp, *bpp, *bppp;
+  uint *a, *aa, *aaa;
 
   for(i = 0; i < NDIRECT; i++){
     if(ip->addrs[i]){
@@ -486,6 +486,49 @@ itrunc(struct inode *ip)
     brelse(bp);
     bfree(ip->dev, ip->addrs[NDIRECT]);
     ip->addrs[NDIRECT] = 0;
+  }
+
+  if (ip->addrs[NDIRECT+1]){
+    bp = bread(ip->dev, ip->addrs[NDIRECT+1]);
+    a = (uint*)bp->data;
+    for(i = 0; i < NINDIRECT; i++)
+      if(a[i]){
+        bpp = bread(ip->dev, a[i]);
+        aa = (uint*)bpp->data;
+        for(j = 0; j < NINDIRECT; j++)
+          if(aa[j])
+            bfree(ip->dev, aa[j]);
+        brelse(bpp);
+        bfree(ip->dev, a[i]);
+      }
+    brelse(bp);
+    bfree(ip->dev, ip->addrs[NDIRECT+1]);
+    ip->addrs[NDIRECT+1] = 0;
+  }
+
+  if (ip->addrs[NDIRECT+2]){
+    bp = bread(ip->dev, ip->addrs[NDIRECT+2]);
+    a = (uint*)bp->data;
+    for(i = 0; i < NINDIRECT; i++)
+      if(a[i]){
+        bpp = bread(ip->dev, a[i]);
+        aa = (uint*)bpp->data;
+        for(j = 0; j < NINDIRECT; i++)
+          if(aa[j]){
+            bppp = bread(ip->dev, aa[j]);
+            aaa = (uint*)bppp->data;
+            for(k = 0; k < NINDIRECT; i++)
+              if(aaa[k])
+                bfree(ip->dev, aaa[k]);
+            brelse(bppp);
+            bfree(ip->dev, aa[j]);
+          }
+        brelse(bpp);
+        bfree(ip->dev, a[j]);
+      }
+    brelse(bp);
+    bfree(ip->dev, ip->addrs[NDIRECT+2]);
+    ip->addrs[NDIRECT+2] = 0;
   }
 
   ip->size = 0;
